@@ -9,23 +9,30 @@ from ta.volatility import BollingerBands
 # ------------------ CONFIG ------------------
 st.set_page_config(page_title="Smart Trading System", layout="wide")
 
-# 🎨 THEME VARIABLES (EDIT THESE)
-PRIMARY_COLOR = "#00ADB5"
-BACKGROUND_COLOR = "#0E1117"
-TEXT_COLOR = "#FFFFFF"
+# 🎨 YOUR COLORS
+COLOR1 = "#b512fa"
+COLOR2 = "#6f3afd"
+COLOR3 = "#09a8ec"
 
 # ------------------ CUSTOM CSS ------------------
 st.markdown(f"""
 <style>
+
+/* Sidebar Gradient */
+section[data-testid="stSidebar"] {{
+    background: linear-gradient(180deg, {COLOR1}, {COLOR2}, {COLOR3});
+}}
+
+/* Text */
 body {{
-    background-color: {BACKGROUND_COLOR};
-    color: {TEXT_COLOR};
-}}
-.stButton>button {{
-    background-color: {PRIMARY_COLOR};
     color: white;
-    border-radius: 10px;
 }}
+
+/* Cards */
+.css-1d391kg {{
+    border-radius: 15px;
+}}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -33,26 +40,23 @@ body {{
 col_logo, col_title = st.columns([1, 4])
 
 with col_logo:
-    st.image("https://via.placeholder.com/100", width=80)  # Replace with your logo later
+    st.image("https://via.placeholder.com/100", width=80)
 
 with col_title:
-    st.title("📈 Smart Trading Analysis System")
+    st.title("🚀 Smart Trading Dashboard")
 
 # ------------------ SIDEBAR ------------------
 st.sidebar.header("⚙️ Settings")
 
-# Dropdown options
 stocks = {
     "Reliance": "RELIANCE.NS",
     "TCS": "TCS.NS",
     "Infosys": "INFY.NS",
     "HDFC Bank": "HDFCBANK.NS",
     "ICICI Bank": "ICICIBANK.NS",
-    "State Bank of India": "SBIN.NS",
-    "Wipro": "WIPRO.NS",
-    "AAPL (Apple)": "AAPL",
-    "TSLA (Tesla)": "TSLA",
-    "GOOGL (Google)": "GOOGL",
+    "AAPL": "AAPL",
+    "TSLA": "TSLA",
+    "GOOGL": "GOOGL",
 }
 
 crypto = {
@@ -61,17 +65,16 @@ crypto = {
     "Solana": "SOL-USD",
 }
 
-category = st.sidebar.selectbox("Select Category", ["Stocks", "Crypto"])
+category = st.sidebar.selectbox("Category", ["Stocks", "Crypto"])
 
 if category == "Stocks":
-    symbol = st.sidebar.selectbox("Select Stock", list(stocks.keys()))
+    symbol = st.sidebar.selectbox("Stock", list(stocks.keys()))
     stock = stocks[symbol]
 else:
-    symbol = st.sidebar.selectbox("Select Crypto", list(crypto.keys()))
+    symbol = st.sidebar.selectbox("Crypto", list(crypto.keys()))
     stock = crypto[symbol]
 
-# Manual override
-stock = st.sidebar.text_input("Or Enter Custom Symbol", stock)
+stock = st.sidebar.text_input("Custom Symbol", stock)
 
 period = st.sidebar.selectbox("Period", ["3mo", "6mo", "1y"])
 interval = st.sidebar.selectbox("Interval", ["1d", "1h"])
@@ -80,7 +83,7 @@ interval = st.sidebar.selectbox("Interval", ["1d", "1h"])
 data = yf.download(stock, period=period, interval=interval)
 
 if data.empty:
-    st.error("Invalid symbol or no data found")
+    st.error("Invalid symbol")
 else:
     if isinstance(data.columns, pd.MultiIndex):
         data.columns = data.columns.get_level_values(0)
@@ -88,9 +91,9 @@ else:
     data = data.dropna()
 
     # ------------------ INDICATORS ------------------
-    data['MA50'] = data['Close'].rolling(window=50).mean()
+    data['MA50'] = data['Close'].rolling(50).mean()
 
-    rsi = RSIIndicator(close=data['Close'].squeeze(), window=14)
+    rsi = RSIIndicator(close=data['Close'].squeeze())
     data['RSI'] = rsi.rsi()
 
     macd = MACD(close=data['Close'])
@@ -103,12 +106,11 @@ else:
 
     # ------------------ METRICS ------------------
     col1, col2, col3 = st.columns(3)
-
     col1.metric("Price", f"{data['Close'].iloc[-1]:.2f}")
     col2.metric("RSI", f"{data['RSI'].iloc[-1]:.2f}")
     col3.metric("MA50", f"{data['MA50'].iloc[-1]:.2f}")
 
-    # ------------------ CHART ------------------
+    # ------------------ CANDLESTICK ------------------
     fig = go.Figure()
 
     fig.add_trace(go.Candlestick(
@@ -116,26 +118,48 @@ else:
         open=data['Open'],
         high=data['High'],
         low=data['Low'],
-        close=data['Close'],
-        name='Candlestick'
+        close=data['Close']
     ))
 
-    fig.add_trace(go.Scatter(x=data.index, y=data['MA50'], name='MA50'))
-
-    fig.add_trace(go.Scatter(x=data.index, y=data['BB_high'], name='BB High', line=dict(dash='dot')))
-    fig.add_trace(go.Scatter(x=data.index, y=data['BB_low'], name='BB Low', line=dict(dash='dot')))
+    fig.add_trace(go.Scatter(
+        x=data.index,
+        y=data['MA50'],
+        name='MA50',
+        line=dict(color="#00ffcc")
+    ))
 
     fig.update_layout(template="plotly_dark")
-
     st.plotly_chart(fig, use_container_width=True)
 
-    # ------------------ RSI ------------------
-    st.subheader("RSI")
-    st.line_chart(data['RSI'])
+    # ------------------ RSI (YELLOW) ------------------
+    st.subheader("RSI (Momentum)")
+    fig_rsi = go.Figure()
+    fig_rsi.add_trace(go.Scatter(
+        x=data.index,
+        y=data['RSI'],
+        line=dict(color="yellow", width=2)
+    ))
+    st.plotly_chart(fig_rsi, use_container_width=True)
 
-    # ------------------ MACD ------------------
-    st.subheader("MACD")
-    st.line_chart(data[['MACD', 'MACD_signal']])
+    # ------------------ MACD (PINK + CYAN) ------------------
+    st.subheader("MACD (Trend)")
+    fig_macd = go.Figure()
+
+    fig_macd.add_trace(go.Scatter(
+        x=data.index,
+        y=data['MACD'],
+        name="MACD",
+        line=dict(color="pink")
+    ))
+
+    fig_macd.add_trace(go.Scatter(
+        x=data.index,
+        y=data['MACD_signal'],
+        name="Signal",
+        line=dict(color="cyan")
+    ))
+
+    st.plotly_chart(fig_macd, use_container_width=True)
 
     # ------------------ SIGNAL ------------------
     latest_rsi = data['RSI'].iloc[-1]
@@ -145,12 +169,37 @@ else:
     st.subheader("📊 Trading Signal")
 
     if latest_rsi < 30 and latest_price > latest_ma:
-        st.success("BUY SIGNAL 📈")
+        st.success("BUY 📈")
+        sentiment = 80
     elif latest_rsi > 70 and latest_price < latest_ma:
-        st.error("SELL SIGNAL 📉")
+        st.error("SELL 📉")
+        sentiment = 20
     else:
         st.warning("HOLD ⚖️")
+        sentiment = 50
+
+    # ------------------ MARKET SENTIMENT BAR ------------------
+    st.subheader("📊 Market Sentiment")
+    st.progress(sentiment / 100)
+
+    # ------------------ TOP MOVERS (MOCK DEMO) ------------------
+    st.subheader("🔥 Market Movers")
+
+    demo_symbols = ["RELIANCE.NS", "TCS.NS", "AAPL", "BTC-USD"]
+
+    cols = st.columns(len(demo_symbols))
+
+    for i, sym in enumerate(demo_symbols):
+        d = yf.download(sym, period="5d", interval="1d")
+
+        if not d.empty:
+            change = d['Close'].iloc[-1] - d['Close'].iloc[0]
+
+            if change > 0:
+                cols[i].success(f"{sym} ↑")
+            else:
+                cols[i].error(f"{sym} ↓")
 
     # ------------------ DATA ------------------
     with st.expander("Show Data"):
-        st.dataframe(data.tail(50))
+        st.dataframe(data.tail(30))
