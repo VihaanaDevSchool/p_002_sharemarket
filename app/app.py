@@ -129,7 +129,7 @@ else:
     ))
 
     fig.update_layout(template="plotly_dark")
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width='stretch')
 
     # ------------------ RSI (YELLOW) ------------------
     st.subheader("RSI (Momentum)")
@@ -193,7 +193,16 @@ else:
         d = yf.download(sym, period="5d", interval="1d")
 
         if not d.empty:
-            change = d['Close'].iloc[-1] - d['Close'].iloc[0]
+            if not d.empty and 'Close' in d:
+                start_price = d['Close'].iloc[0]
+                end_price = d['Close'].iloc[-1]
+
+                change = float(end_price - start_price)
+
+                if change > 0:
+                    cols[i].success(f"{sym} ↑")
+                else:
+                    cols[i].error(f"{sym} ↓")
 
             if change > 0:
                 cols[i].success(f"{sym} ↑")
