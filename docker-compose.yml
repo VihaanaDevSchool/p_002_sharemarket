@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  trading-app:
+    build: .
+    container_name: s-trade
+    ports:
+      - "8501:8501"
+    # volumes:
+    #   - .:/app
+    restart: unless-stopped
