@@ -128,7 +128,7 @@ else:
     latest_price = data['Close'].iloc[-1]
     latest_ma = data['MA50'].iloc[-1]
 
-    st.subheader("📊 Trading Signal")
+    st.subheader("✨ Trading Signal")
 
     if latest_rsi < 30 and latest_price > latest_ma:
         st.success("BUY 📈")
@@ -141,7 +141,7 @@ else:
         sentiment = 50
 
     # ------------------ MARKET SENTIMENT ------------------
-    st.subheader("📊 Market Sentiment")
+    st.subheader("🏮 Market Sentiment")
     st.progress(sentiment / 100)
 
     # ------------------ CANDLESTICK ------------------
@@ -166,7 +166,7 @@ else:
     st.plotly_chart(fig, width='stretch')
 
     # ------------------ RSI ------------------
-    st.subheader("RSI (Momentum)")
+    st.subheader("💪🏻 RSI (Momentum)")
     fig_rsi = go.Figure()
     fig_rsi.add_trace(go.Scatter(
         x=data.index,
@@ -176,7 +176,7 @@ else:
     st.plotly_chart(fig_rsi, width='stretch')
 
     # ------------------ MACD ------------------
-    st.subheader("MACD (Trend)")
+    st.subheader("🪂 MACD (Trend)")
     fig_macd = go.Figure()
 
     fig_macd.add_trace(go.Scatter(
