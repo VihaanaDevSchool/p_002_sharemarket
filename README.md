@@ -1,44 +1,59 @@
-#
----
+# Smart Trading Analysis System
 
-# 📘 **2. README.md (FINAL PROJECT FILE)**
+A modern trading dashboard built using Streamlit for real-time stock and crypto analysis.
 
-👉 Save as `README.md`
+## Features
+- Real-time data
+- Candlestick charts
+- RSI, MACD, Bollinger Bands
+- Buy/Sell signals
+- Market sentiment
+- AI assistant
 
-```md
-# 🚀 Smart Trading Analysis System
-
-A modern web-based trading dashboard built using Streamlit that provides real-time stock and cryptocurrency analysis with technical indicators and AI-based suggestions.
-
----
-
-## 📸 Features
-
-✅ Real-time stock & crypto data  
-✅ Candlestick charts  
-✅ RSI, MACD, Bollinger Bands  
-✅ Trading signals (Buy / Sell / Hold)  
-✅ Market sentiment indicator  
-✅ Market movers section  
-✅ AI assistant suggestions 🤖  
-✅ Custom UI with gradient theme  
-
----
-
-## 🛠️ Tech Stack
-
+## Tech Stack
 - Python
 - Streamlit
-- yFinance API
+- yFinance
 - Pandas
 - Plotly
-- TA (Technical Analysis Library)
+- TA library
 
----
+## Installation
 
-## ⚙️ Installation
-
-### 1. Clone the repository
-```bash
+### Clone repo
 git clone <your-repo-link>
-cd trading-app p_002_sharemarket
+cd trading-app
+
+### Install dependencies
+pip install -r requirements.txt
+
+### Run app
+streamlit run app.py
+
+## Docker
+
+docker build -t trading-app .
+docker run -p 8501:8501 trading-app
+
+## How It Works
+1. User selects stock/crypto
+2. Data is fetched
+3. Indicators are applied
+4. Signal is generated
+5. AI assistant gives suggestion
+
+## Use Case
+- Students
+- Beginners in trading
+- Academic projects
+
+## Disclaimer
+This project is for educational purposes only.
+
+## Future Scope
+- ML predictions
+- Alerts
+- Deployment
+
+## Author
+Smart Trading Analysis System Project
