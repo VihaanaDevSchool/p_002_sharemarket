@@ -7,7 +7,11 @@ from ta.trend import MACD
 from ta.volatility import BollingerBands
 
 # ------------------ CONFIG ------------------
-st.set_page_config(page_title="Smart Trading System", layout="wide")
+st.set_page_config(
+    page_title="Smart Trading System",
+    layout="wide",
+    page_icon="./img/logo.webp"  # ✅ FAVICON ADDED
+)
 
 # 🎨 YOUR COLORS
 COLOR1 = "#b512fa"
@@ -17,22 +21,12 @@ COLOR3 = "#09a8ec"
 # ------------------ CUSTOM CSS ------------------
 st.markdown(f"""
 <style>
-
-/* Sidebar Gradient */
 section[data-testid="stSidebar"] {{
     background: linear-gradient(180deg, {COLOR1}, {COLOR2}, {COLOR3});
 }}
-
-/* Text */
 body {{
     color: white;
 }}
-
-/* Cards */
-.css-1d391kg {{
-    border-radius: 15px;
-}}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -40,7 +34,7 @@ body {{
 col_logo, col_title = st.columns([1, 4])
 
 with col_logo:
-    st.image("https://via.placeholder.com/100", width=80)
+    st.image("./img/logo.webp", width=80)
 
 with col_title:
     st.title("🚀 Smart Trading Dashboard")
@@ -90,6 +84,25 @@ else:
 
     data = data.dropna()
 
+    # ------------------ TOP MOVERS (NOW AT TOP) ------------------
+    st.subheader("🔥 Market Movers")
+
+    demo_symbols = ["RELIANCE.NS", "TCS.NS", "AAPL", "BTC-USD"]
+    cols = st.columns(len(demo_symbols))
+
+    for i, sym in enumerate(demo_symbols):
+        d = yf.download(sym, period="5d", interval="1d")
+
+        if not d.empty and 'Close' in d:
+            start_price = float(d['Close'].iloc[0])
+            end_price = float(d['Close'].iloc[-1])
+            change = end_price - start_price
+
+            if change > 0:
+                cols[i].success(f"{sym} ↑")
+            else:
+                cols[i].error(f"{sym} ↓")
+
     # ------------------ INDICATORS ------------------
     data['MA50'] = data['Close'].rolling(50).mean()
 
@@ -109,6 +122,27 @@ else:
     col1.metric("Price", f"{data['Close'].iloc[-1]:.2f}")
     col2.metric("RSI", f"{data['RSI'].iloc[-1]:.2f}")
     col3.metric("MA50", f"{data['MA50'].iloc[-1]:.2f}")
+
+    # ------------------ SIGNAL (NOW BELOW MOVERS) ------------------
+    latest_rsi = data['RSI'].iloc[-1]
+    latest_price = data['Close'].iloc[-1]
+    latest_ma = data['MA50'].iloc[-1]
+
+    st.subheader("📊 Trading Signal")
+
+    if latest_rsi < 30 and latest_price > latest_ma:
+        st.success("BUY 📈")
+        sentiment = 80
+    elif latest_rsi > 70 and latest_price < latest_ma:
+        st.error("SELL 📉")
+        sentiment = 20
+    else:
+        st.warning("HOLD ⚖️")
+        sentiment = 50
+
+    # ------------------ MARKET SENTIMENT ------------------
+    st.subheader("📊 Market Sentiment")
+    st.progress(sentiment / 100)
 
     # ------------------ CANDLESTICK ------------------
     fig = go.Figure()
@@ -131,7 +165,7 @@ else:
     fig.update_layout(template="plotly_dark")
     st.plotly_chart(fig, width='stretch')
 
-    # ------------------ RSI (YELLOW) ------------------
+    # ------------------ RSI ------------------
     st.subheader("RSI (Momentum)")
     fig_rsi = go.Figure()
     fig_rsi.add_trace(go.Scatter(
@@ -139,9 +173,9 @@ else:
         y=data['RSI'],
         line=dict(color="yellow", width=2)
     ))
-    st.plotly_chart(fig_rsi, use_container_width=True)
+    st.plotly_chart(fig_rsi, width='stretch')
 
-    # ------------------ MACD (PINK + CYAN) ------------------
+    # ------------------ MACD ------------------
     st.subheader("MACD (Trend)")
     fig_macd = go.Figure()
 
@@ -159,55 +193,7 @@ else:
         line=dict(color="cyan")
     ))
 
-    st.plotly_chart(fig_macd, use_container_width=True)
-
-    # ------------------ SIGNAL ------------------
-    latest_rsi = data['RSI'].iloc[-1]
-    latest_price = data['Close'].iloc[-1]
-    latest_ma = data['MA50'].iloc[-1]
-
-    st.subheader("📊 Trading Signal")
-
-    if latest_rsi < 30 and latest_price > latest_ma:
-        st.success("BUY 📈")
-        sentiment = 80
-    elif latest_rsi > 70 and latest_price < latest_ma:
-        st.error("SELL 📉")
-        sentiment = 20
-    else:
-        st.warning("HOLD ⚖️")
-        sentiment = 50
-
-    # ------------------ MARKET SENTIMENT BAR ------------------
-    st.subheader("📊 Market Sentiment")
-    st.progress(sentiment / 100)
-
-    # ------------------ TOP MOVERS (MOCK DEMO) ------------------
-    st.subheader("🔥 Market Movers")
-
-    demo_symbols = ["RELIANCE.NS", "TCS.NS", "AAPL", "BTC-USD"]
-
-    cols = st.columns(len(demo_symbols))
-
-    for i, sym in enumerate(demo_symbols):
-        d = yf.download(sym, period="5d", interval="1d")
-
-        if not d.empty:
-            if not d.empty and 'Close' in d:
-                start_price = d['Close'].iloc[0]
-                end_price = d['Close'].iloc[-1]
-
-                change = float(end_price - start_price)
-
-                if change > 0:
-                    cols[i].success(f"{sym} ↑")
-                else:
-                    cols[i].error(f"{sym} ↓")
-
-            if change > 0:
-                cols[i].success(f"{sym} ↑")
-            else:
-                cols[i].error(f"{sym} ↓")
+    st.plotly_chart(fig_macd, width='stretch')
 
     # ------------------ DATA ------------------
     with st.expander("Show Data"):
