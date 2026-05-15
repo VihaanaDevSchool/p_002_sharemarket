@@ -198,3 +198,46 @@ else:
     # ------------------ DATA ------------------
     with st.expander("Show Data"):
         st.dataframe(data.tail(30))
+
+        # ------------------ AI ASSISTANT ------------------
+
+# Generate AI message
+if latest_rsi < 30 and latest_price > latest_ma:
+    ai_msg = "🤖 Strong BUY signal detected. Momentum is rising."
+elif latest_rsi > 70 and latest_price < latest_ma:
+    ai_msg = "🤖 Market looks overbought. Consider SELLING."
+elif latest_price > latest_ma:
+    ai_msg = "🤖 Uptrend forming. Watch for breakout."
+elif latest_price < latest_ma:
+    ai_msg = "🤖 Downtrend detected. Be cautious."
+else:
+    ai_msg = "🤖 Market is sideways. Wait for clear signal."
+
+# Floating UI
+st.markdown(f"""
+<style>
+#ai-box {{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 260px;
+    background: linear-gradient(135deg, #6f3afd, #09a8ec);
+    padding: 15px;
+    border-radius: 15px;
+    color: white;
+    box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+    z-index: 9999;
+    font-size: 14px;
+}}
+#ai-box img {{
+    width: 40px;
+    margin-bottom: 8px;
+}}
+</style>
+
+<div id="ai-box">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
+    <b>AI Assistant</b><br>
+    {ai_msg}
+</div>
+""", unsafe_allow_html=True)
